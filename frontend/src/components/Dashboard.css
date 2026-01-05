@@ -192,10 +192,21 @@
 }
 
 /* Background Image for Friends Card */
-.friends-card,
-.recs-section {
+.friends-card {
     position: relative;
     background: #050505;
+}
+
+/* Recommendations Card - Pure Image with Solid Backing */
+.dashboard-grid .section-wrapper .section-card.recs-section {
+    position: relative;
+    background: #050505 !important;
+    /* Solid backing */
+    backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    z-index: 10;
+    /* Ensure it respects Z-stack */
 }
 
 .friends-card::before,
@@ -235,9 +246,61 @@
     pointer-events: none;
 }
 
+/* Entrance Animation Wrapper */
+.entrance-animator {
+    opacity: 0.9;
+    transform: translateY(8px);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    width: 100%;
+    height: 100%;
+}
+
+.entrance-animator.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 /* Card Background Handling */
 .section-card {
     position: relative;
+    /* Interaction Transitions */
+    transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.section-card:hover {
+    transform: translateY(-2px) !important;
+    /* Lift -2px */
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    /* Deepen Shadow */
+}
+
+.section-card:active {
+    transform: translateY(-1px) !important;
+    /* Depress +1px from hover (effectively -1px from base) */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    /* Tighten Shadow */
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    /* Fast 80-100ms */
+}
+
+/* Opacity Logic for Face Cards */
+.friends-card::before,
+.recs-section::before {
+    opacity: 0.6 !important;
+    /* Default 0.55-0.6 */
+    transition: opacity 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.friends-card:hover::before,
+.recs-section:hover::before {
+    opacity: 0.7 !important;
+    /* Hover 0.65-0.7 */
+}
+
+.section-card:active .friends-card::before,
+.section-card:active .recs-section::before {
+    opacity: 0.75 !important;
 }
 
 .card-bg-layer {
@@ -262,6 +325,62 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+}
+
+/* Stuck State Visuals */
+.is-stuck .section-card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    /* Reduced shadow prevents heavy stack */
+    transition: box-shadow 0.3s ease;
+}
+
+.is-stuck .friends-card::before,
+.is-stuck .recs-section::before,
+.is-stuck .card-bg-layer {
+    opacity: 0.45 !important;
+    /* Lower opacity a bit (from 0.6) */
+}
+
+/* Ensure hover still works/overrides if needed, OR sticky overrides hover? 
+   User said "When sticky... reduce shadow". 
+   If user hovers a stuck card, it should probably regain prominence?
+   Let's allow hover to override.
+*/
+.is-stuck .section-card:hover {
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    /* Restore hover shadow */
+}
+
+.is-stuck .section-card:hover .friends-card::before,
+.is-stuck .section-card:hover .recs-section::before {
+    opacity: 0.7 !important;
+    /* Restore opacity */
+}
+
+/* Stack Depth Hierarchy */
+/* Depth 0 (Top Card) - Strongest/Full */
+.section-wrapper[data-stack-depth="0"] .section-card {
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    filter: contrast(1);
+    transition: all 0.3s ease;
+}
+
+/* Depth 1 (2nd Card) - -5% */
+.section-wrapper[data-stack-depth="1"] .section-card {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    filter: contrast(0.95) brightness(0.95);
+}
+
+/* Depth 2 (3rd Card) - -10% */
+.section-wrapper[data-stack-depth="2"] .section-card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    filter: contrast(0.9) brightness(0.9);
+}
+
+/* Depth 3+ (4th+) - -15% */
+.section-wrapper[data-stack-depth="3"] .section-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    filter: contrast(0.85) brightness(0.85);
 }
 
 /* Poster Slogan Typography */
@@ -441,4 +560,12 @@
     100% {
         transform: translate(20px, 40px) scale(1.05);
     }
+}
+@keyframes skeleton {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
 }
