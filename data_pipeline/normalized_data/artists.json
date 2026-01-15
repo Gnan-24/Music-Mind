@@ -1,0 +1,59 @@
+[
+  {
+    "artist_id": "2FgHPfRprDaylrSRVf1UlN",
+    "name": "Thaman S",
+    "genres": [
+      "tollywood",
+      "telugu pop",
+      "tamil dance",
+      "tamil pop",
+      "kollywood",
+      "kannada pop"
+    ],
+    "popularity": 76
+  },
+  {
+    "artist_id": "5jJrJU7VVmxQQLcLAmmxXc",
+    "name": "Sai Abhyankkar",
+    "genres": [
+      "tamil indie",
+      "kollywood",
+      "tamil pop"
+    ],
+    "popularity": 78
+  },
+  {
+    "artist_id": "0YC192cP3KPCRWx8zr8MfZ",
+    "name": "Hans Zimmer",
+    "genres": [
+      "soundtrack"
+    ],
+    "popularity": 80
+  },
+  {
+    "artist_id": "74KM79TiuVKeVCqs8QtB0B",
+    "name": "Sabrina Carpenter",
+    "genres": [
+      "pop"
+    ],
+    "popularity": 93
+  },
+  {
+    "artist_id": "00FQb4jTyendYWaN8pK0wa",
+    "name": "Lana Del Rey",
+    "genres": [],
+    "popularity": 90
+  },
+  {
+    "artist_id": "06HL4z0CvFAxyc27GXpf02",
+    "name": "Taylor Swift",
+    "genres": [],
+    "popularity": 100
+  },
+  {
+    "artist_id": "1Xyo4u8uXC1ZmMpatF05PJ",
+    "name": "The Weeknd",
+    "genres": [],
+    "popularity": 96
+  }
+]
