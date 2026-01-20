@@ -29,7 +29,7 @@ services:
     name: musicmind-frontend
     env: static
     buildCommand: cd frontend && npm install && npm run build
-    publishDir: frontend/dist
+    staticPublishPath: frontend/dist
     routes:
       - type: rewrite
         source: /*
