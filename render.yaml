@@ -1,0 +1,38 @@
+services:
+  # Backend Service
+  - type: web
+    name: musicmind-backend
+    env: node
+    root: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: SPOTIFY_CLIENT_ID
+        sync: false
+      - key: SPOTIFY_CLIENT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        fromService:
+          type: static
+          name: musicmind-frontend
+          property: url
+      - key: REDIRECT_URI
+        fromService:
+          type: web
+          name: musicmind-backend
+          envVarKey: RENDER_EXTERNAL_URL
+          value: /callback 
+
+  # Frontend Service (Static Site)
+  - type: static
+    name: musicmind-frontend
+    env: static
+    root: frontend
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
