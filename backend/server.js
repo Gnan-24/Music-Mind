@@ -142,12 +142,14 @@ app.get('/callback', async (req, res) => {
         params.append('grant_type', 'authorization_code');
         params.append('code', code);
         params.append('redirect_uri', REDIRECT_URI);
-        params.append('client_id', CLIENT_ID);
-        params.append('client_secret', CLIENT_SECRET);
+        // Client ID/Secret removed from body, using Basic Auth header instead
+
+        const authString = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
 
         const response = await axios.post('https://accounts.spotify.com/api/token', params, {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': `Basic ${authString}`
             }
         });
 
