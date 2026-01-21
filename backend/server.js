@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 8888;
 // Sanitize Envs
 const CLIENT_ID = (process.env.CLIENT_ID || process.env.SPOTIFY_CLIENT_ID || '').trim();
 const CLIENT_SECRET = (process.env.CLIENT_SECRET || process.env.SPOTIFY_CLIENT_SECRET || '').trim();
-const REDIRECT_URI = (process.env.REDIRECT_URI || (process.env.RENDER_EXTERNAL_URL ? `${process.env.RENDER_EXTERNAL_URL}/callback` : '')).trim();
+const REDIRECT_URI = (process.env.REDIRECT_URI || process.env.SPOTIFY_REDIRECT_URI || (process.env.RENDER_EXTERNAL_URL ? `${process.env.RENDER_EXTERNAL_URL}/callback` : '')).trim();
 
 // Diagnostics Log
 console.log('--- SERVER CONFIG ---');
@@ -101,6 +101,13 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 // --- Auth Routes ---
 
 app.get('/login', (req, res) => {
+    console.log(`[LOGIN] Initiating login. Client ID: ${CLIENT_ID ? 'Present' : 'MISSING'}, Redirect URI: ${REDIRECT_URI}`);
+
+    if (!CLIENT_ID) {
+        console.error('CRITICAL: CLIENT_ID is missing in server environment.');
+        return res.status(500).send('Server Configuration Error: Missing SPOTIFY_CLIENT_ID');
+    }
+
     const scope = 'user-read-private user-read-email user-top-read';
     // Strictly use the sanitized env var for redirect
     const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${CLIENT_ID}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
