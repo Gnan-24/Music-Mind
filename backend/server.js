@@ -133,18 +133,19 @@ app.get('/callback', async (req, res) => {
     const error = req.query.error || null;
 
     if (error) return res.send(`Spotify Error: ${error}`);
+    if (!code) return res.status(400).send('Authentication Error: No authentication code returned from Spotify.');
 
     try {
-        // Raw String Construction to avoid any serialization issues
-        // We put credentials in BOTH Body (as fallback) and Header
-        const rawBody = `grant_type=authorization_code&code=${code}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}`;
+        console.log(`[CALLBACK] Exchanging code for token. Redirect URI: ${REDIRECT_URI}`);
 
-        console.log('[CALLBACK] Sending Raw Payload (Hidden Secrets)');
+        const params = new URLSearchParams();
+        params.append('grant_type', 'authorization_code');
+        params.append('code', code);
+        params.append('redirect_uri', REDIRECT_URI);
+        params.append('client_id', CLIENT_ID);
+        params.append('client_secret', CLIENT_SECRET);
 
-        const response = await axios({
-            method: 'post',
-            url: 'https://accounts.spotify.com/api/token',
-            data: rawBody,
+        const response = await axios.post('https://accounts.spotify.com/api/token', params, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
