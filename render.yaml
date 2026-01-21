@@ -17,13 +17,7 @@ services:
         fromService:
           type: web
           name: musicmind-frontend
-          property: host
-      - key: REDIRECT_URI
-        fromService:
-          type: web
-          name: musicmind-backend
-          envVarKey: RENDER_EXTERNAL_URL
-          value: /callback 
+          property: host 
 
   # Frontend Service (Static Site)
   - type: web

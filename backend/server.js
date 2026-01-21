@@ -23,8 +23,8 @@ const app = express();
 const PORT = process.env.PORT || 8888;
 
 // Sanitize Envs
-const CLIENT_ID = (process.env.CLIENT_ID || '').trim();
-const CLIENT_SECRET = (process.env.CLIENT_SECRET || '').trim();
+const CLIENT_ID = (process.env.CLIENT_ID || process.env.SPOTIFY_CLIENT_ID || '').trim();
+const CLIENT_SECRET = (process.env.CLIENT_SECRET || process.env.SPOTIFY_CLIENT_SECRET || '').trim();
 const REDIRECT_URI = (process.env.REDIRECT_URI || (process.env.RENDER_EXTERNAL_URL ? `${process.env.RENDER_EXTERNAL_URL}/callback` : '')).trim();
 
 // Diagnostics Log
