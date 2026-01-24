@@ -169,7 +169,8 @@ app.get('/callback', async (req, res) => {
         req.session.refresh_token = refresh_token;
         req.session.expires_at = Date.now() + (expires_in * 1000) - 60000;
 
-        res.redirect('http://localhost:5173/dashboard?login=success');
+        res.redirect(`${frontendUrl}/dashboard?login=success`);
+
 
     } catch (err) {
         console.error('Login Callback Error:', err.message);
