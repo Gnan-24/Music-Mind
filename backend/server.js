@@ -44,14 +44,13 @@ console.log('---------------------');
 app.set('trust proxy', 1);
 
 app.use(cookieSession({
-    name: 'musicmind-session-v2',
-    keys: [process.env.COOKIE_KEY || 'default_secret_key_change_me'],
-    maxAge: 24 * 60 * 60 * 1000,
+  name: 'musicmind-session-v2',
+  keys: [process.env.COOKIE_KEY || 'default_secret_key_change_me'],
+  maxAge: 24 * 60 * 60 * 1000,
 
-    // 🔥 CRITICAL FIXES
-    secure: true,          // REQUIRED on Render (HTTPS)
-    httpOnly: true,
-    sameSite: 'none'       // REQUIRED for frontend on different domain
+  secure: true,        // HTTPS on Render
+  httpOnly: true,
+  sameSite: 'none'     // cross-domain frontend
 }));
 
 // Ensure FRONTEND_URL has protocol (Render provides 'host' property without https://)
