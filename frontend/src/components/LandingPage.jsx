@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import FloatingVinyl from './FloatingVinyl';
 import './LandingPage.css';
 
@@ -28,12 +27,12 @@ const TypewriterText = ({ text, delay = 100, onComplete }) => {
 };
 
 const LandingPage = () => {
-    const navigate = useNavigate();
     const [showLogin, setShowLogin] = useState(false);
 
+    const BACKEND_URL = "https://musicmind-backend.onrender.com";
+
     const handleLogin = () => {
-        // Navigate to dashboard
-        navigate('/dashboard');
+        window.location.href = `${BACKEND_URL}/login`;
     };
 
     return (
@@ -48,8 +47,13 @@ const LandingPage = () => {
                         onComplete={() => setShowLogin(true)}
                     />
                 </h1>
+
                 <p className="hero-subtitle">
-                    {showLogin && <span className="fade-in">Analyze your Spotify music taste like never before.</span>}
+                    {showLogin && (
+                        <span className="fade-in">
+                            Analyze your Spotify music taste like never before.
+                        </span>
+                    )}
                 </p>
 
                 {showLogin && (
