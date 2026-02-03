@@ -227,17 +227,15 @@ app.get('/friends/search', checkAuth, async (req, res) => {
   });
   res.json(await friendService.searchUsers(req.query.q, me.data.id));
 });
-// ---------------- ROOT ----------------
+// ---------------- ROOT / HEALTH ----------------
 app.get('/', (req, res) => {
-  res.send(`
-    <h1>MusicMind Backend</h1>
-    <p>Status: Running</p>
-    <ul>
-      <li><a href="/login">Login with Spotify</a></li>
-      <li><a href="/api-docs">API Docs</a></li>
-      <li><a href="/api/analytics/dashboard">Analytics (after login)</a></li>
-    </ul>
-  `);
+  res.status(200).json({
+    service: 'MusicMind Backend',
+    status: 'running',
+    version: '1.0.0',
+    docs: '/api-docs',
+    login: '/login'
+  });
 });
 
 
