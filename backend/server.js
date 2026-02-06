@@ -91,6 +91,24 @@ async function checkAuth(req, res, next) {
   next();
 }
 
+// ---------------- SPOTIFY SEARCH HELPER ----------------
+async function searchSpotifyTracks(query, accessToken) {
+  const res = await axios.get('https://api.spotify.com/v1/search', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    params: {
+      q: query,
+      type: 'track',
+      limit: 5
+    }
+  });
+
+  return res.data.tracks.items.map(track => ({
+    title: track.name,
+    artist: track.artists[0]?.name || '',
+    spotifyUrl: track.external_urls.spotify
+  }));
+}
+
 // ---------------- DOCS ----------------
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
@@ -150,6 +168,83 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/auth/logout', (req, res) => res.redirect('/logout'));
+
+// ---------------- 🔍 SEARCH (ML + SPOTIFY) ----------------
+app.post('/api/search', checkAuth, async (req, res) => {
+  const query = req.body?.query;
+
+  if (!query || !query.trim()) {
+    return res.status(400).json({ error: 'Query is required' });
+  }
+
+  const cleanQuery = query.trim();
+  let mlResults = [];
+  let spotifyResults = [];
+
+  // ML Service
+  try {
+    const mlRes = await axios.post('http://127.0.0.1:8001/search', {
+      query: cleanQuery
+    });
+    mlResults = mlRes.data.results || [];
+  } catch (e) {
+    console.warn('ML service unavailable');
+  }
+
+  // Spotify Search
+  try {
+    spotifyResults = await searchSpotifyTracks(
+      cleanQuery,
+      req.session.access_token
+    );
+  } catch (e) {
+    console.warn('Spotify search failed');
+  }
+
+  mlResults.sort((a, b) => b.score - a.score);
+
+  const featuredMl = mlResults[0] || null;
+  const relatedMl = mlResults.slice(1);
+
+  const attachSpotify = song => {
+    const match = spotifyResults.find(
+      s =>
+        s.title.toLowerCase() === song.title.toLowerCase() &&
+        s.artist.toLowerCase() === song.artist.toLowerCase()
+    );
+    return match ? match.spotifyUrl : null;
+  };
+
+  const featured = featuredMl
+    ? {
+        title: featuredMl.title,
+        artist: featuredMl.artist,
+        spotifyUrl: attachSpotify(featuredMl)
+      }
+    : null;
+
+  const results = relatedMl.map(song => ({
+    title: song.title,
+    artist: song.artist,
+    score: song.score,
+    spotifyUrl: attachSpotify(song)
+  }));
+
+  const mlKeySet = mlResults.map(
+    s => `${s.title}-${s.artist}`.toLowerCase()
+  );
+
+  const spotifyFallback = spotifyResults.filter(
+    s => !mlKeySet.includes(`${s.title}-${s.artist}`.toLowerCase())
+  );
+
+  res.json({
+    query: cleanQuery,
+    featured,
+    results,
+    spotifyFallback
+  });
+});
 
 // ---------------- USER PROFILE ----------------
 app.get('/api/user/profile', checkAuth, async (req, res) => {
