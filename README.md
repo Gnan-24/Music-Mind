@@ -32,6 +32,7 @@ Frontend requests analytics via a small API contract and renders dashboards and 
 ## Key features
 - OAuth-based Spotify authentication
 - API endpoint: GET /api/analytics/dashboard — returns `genres`, `moodScore`, `topTracks`, and `generatedAt`
+- ml_service
 - Persistent analytics save & retrieval (backend/services/analyticsService.js)
 - Redis-based caching layer for read-heavy analytics endpoints (cacheService)
 - Recommendation trigger endpoint (placeholder for future ML integration)
