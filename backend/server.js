@@ -74,16 +74,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// ---------------- RATE LIMITING ----------------
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false
-});
-
-app.use('/api', apiLimiter);
-
 // ---------------- AUTH MIDDLEWARE ----------------
 async function checkAuth(req, res, next) {
   if (!req.session || !req.session.access_token) {
