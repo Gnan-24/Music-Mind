@@ -19,7 +19,7 @@ const swaggerSpecs = require('./config/swagger');
 const app = express();
 const PORT = process.env.PORT || 8888;
 
-// 🔴 ML SERVICE URL (FROM ENV)
+// 🔴 IMPORTANT: ML SERVICE URL (FROM ENV)
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL;
 
 // ---------------- ENV ----------------
@@ -61,18 +61,6 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
-// ---------------- REQUEST LOGGING ----------------
-app.use((req, res, next) => {
-  const start = Date.now();
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-    console.log(
-      `[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`
-    );
-  });
-  next();
-});
 
 // ---------------- AUTH MIDDLEWARE ----------------
 async function checkAuth(req, res, next) {
@@ -182,11 +170,8 @@ app.get('/logout', (req, res) => {
   res.redirect(frontendUrl);
 });
 
-// ================= API v1 ROUTER =================
-const apiV1 = express.Router();
-
-// 🔍 SEARCH (ML + SPOTIFY)
-apiV1.post('/search', checkAuth, async (req, res) => {
+// ---------------- 🔍 SEARCH (ML + SPOTIFY) ----------------
+app.post('/api/search', checkAuth, async (req, res) => {
   const query = req.body?.query;
 
   if (!query || !query.trim()) {
@@ -197,8 +182,11 @@ apiV1.post('/search', checkAuth, async (req, res) => {
   let mlResults = [];
   let spotifyResults = [];
 
+  // 🔴 ML SERVICE (FIXED)
   try {
-    if (!ML_SERVICE_URL) throw new Error('ML_SERVICE_URL not set');
+    if (!ML_SERVICE_URL) {
+      throw new Error('ML_SERVICE_URL not set');
+    }
 
     const mlRes = await axios.post(
       `${ML_SERVICE_URL}/search`,
@@ -211,15 +199,17 @@ apiV1.post('/search', checkAuth, async (req, res) => {
     console.warn('⚠️ ML service unavailable:', e.message);
   }
 
+  // Spotify Search
   try {
     spotifyResults = await searchSpotifyTracks(
       cleanQuery,
       req.session.access_token
     );
-  } catch {
+  } catch (e) {
     console.warn('⚠️ Spotify search failed');
   }
 
+  // Sort ML results
   mlResults.sort((a, b) => b.score - a.score);
 
   const featuredMl = mlResults[0] || null;
@@ -234,48 +224,53 @@ apiV1.post('/search', checkAuth, async (req, res) => {
     return match ? match.spotifyUrl : null;
   };
 
+  const featured = featuredMl
+    ? {
+        title: featuredMl.title,
+        artist: featuredMl.artist,
+        spotifyUrl: attachSpotify(featuredMl)
+      }
+    : null;
+
+  const results = relatedMl.map(song => ({
+    title: song.title,
+    artist: song.artist,
+    score: song.score,
+    spotifyUrl: attachSpotify(song)
+  }));
+
+  const mlKeySet = mlResults.map(
+    s => `${s.title}-${s.artist}`.toLowerCase()
+  );
+
+  const spotifyFallback = spotifyResults.filter(
+    s => !mlKeySet.includes(`${s.title}-${s.artist}`.toLowerCase())
+  );
+
   res.json({
     query: cleanQuery,
-    featured: featuredMl
-      ? {
-          title: featuredMl.title,
-          artist: featuredMl.artist,
-          spotifyUrl: attachSpotify(featuredMl)
-        }
-      : null,
-    results: relatedMl.map(song => ({
-      title: song.title,
-      artist: song.artist,
-      score: song.score,
-      spotifyUrl: attachSpotify(song)
-    })),
-    spotifyFallback: spotifyResults
+    featured,
+    results,
+    spotifyFallback
   });
 });
-
-// 🔁 Backward compatibility
-app.post('/api/search', apiV1);
-
-// Mount versioned API
-app.use('/api/v1', apiV1);
 
 // ---------------- HEALTH ----------------
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
-
 // ---------------- ROOT ----------------
 app.get('/', (req, res) => {
   res.json({
     service: 'MusicMind Backend API',
     status: 'running',
-    version: 'v1',
     endpoints: {
-      search: 'POST /api/v1/search',
+      search: 'POST /api/search',
       health: 'GET /health'
     }
   });
 });
+
 
 // ---------------- START ----------------
 app.listen(PORT, () => {
